@@ -1,0 +1,304 @@
+{
+  "categories": {
+    "ai": {
+      "label": "AI Automation",
+      "keywords": [
+        "ai",
+        "artificial intelligence",
+        "automation",
+        "machine learning",
+        "genai",
+        "generative ai",
+        "chatgpt",
+        "copilot",
+        "llm",
+        "ai strategy",
+        "ai adoption"
+      ],
+      "buyer_titles": [
+        "Learning and Development",
+        "L&D",
+        "Head of People",
+        "HR Director",
+        "Chief Operating Officer",
+        "Head of Digital Transformation",
+        "Chief Technology Officer",
+        "Head of Innovation"
+      ],
+      "programmes": [
+        {
+          "name": "AI Leadership: AI Strategy & Opportunity (Level 5 Apprenticeship Unit)",
+          "url": "https://www.wtd.org.uk/individual-programme/ai-leadership/",
+          "facts": "Apprenticeship Unit ref. AU0009, not a full apprenticeship. Gives senior leaders frameworks to spot real AI opportunity and build a board-ready case. Minimum 30 hours over about 4 weeks, live online. Government-funded up to £750 for eligible non-levy employers.",
+          "pitch": "a short, funded AI leadership unit that helps senior leaders work out where AI genuinely pays off and build a board-ready case for it. It runs live online over about four weeks"
+        },
+        {
+          "name": "Artificial Intelligence (AI) and Automation Practitioner",
+          "url": "https://www.wtd.org.uk/individual-programme/artificial-intelligence-ai-and-automation-practitioner/",
+          "facts": "Apprenticeship in AI and automation for staff who will build and run automated workflows. Check the programme page for level and duration before quoting them.",
+          "pitch": "a funded apprenticeship that gives your people the practical skills to build and run AI and automation in their day-to-day work"
+        }
+      ]
+    },
+    "digital_it": {
+      "label": "Digital and IT",
+      "keywords": [
+        "it",
+        "it support",
+        "helpdesk",
+        "network",
+        "digital skills",
+        "digital support",
+        "infrastructure",
+        "service desk"
+      ],
+      "buyer_titles": [
+        "IT Director",
+        "Head of IT",
+        "IT Manager",
+        "Learning and Development",
+        "HR Director"
+      ],
+      "programmes": [
+        {
+          "name": "IT Solutions Technician (Level 3)",
+          "url": "https://www.wtd.org.uk/individual-programme/level-3-it-solutions-technician/",
+          "facts": "Installing, configuring, testing and supporting IT systems, hardware and networks. 17 months (14 training + 3 EPA). Government-funded, online UK-wide.",
+          "pitch": "a funded Level 3 apprenticeship that trains staff to install, configure and support your IT systems and networks"
+        },
+        {
+          "name": "Digital Support Technician (Level 3)",
+          "url": "https://www.wtd.org.uk/individual-programme/digital-support-technician/",
+          "facts": "IT support, troubleshooting and user-coaching skills. 17 months (14 + 3 EPA). 95–100% funded for most employers.",
+          "pitch": "a funded Level 3 apprenticeship that builds practical IT support and troubleshooting skills in your own team"
+        },
+        {
+          "name": "Information Communications Technician (Level 3)",
+          "url": "https://www.wtd.org.uk/individual-programme/information-communications-technician/",
+          "facts": "Turns help desk and 1st/2nd line support staff into confident technicians. 17 months (14 + 3 EPA), government-funded.",
+          "pitch": "a funded Level 3 apprenticeship that turns help desk and first or second line staff into confident technicians"
+        }
+      ]
+    },
+    "cyber": {
+      "label": "Cyber Security",
+      "keywords": [
+        "cyber",
+        "cyber security",
+        "cybersecurity",
+        "security",
+        "infosec",
+        "threat",
+        "soc",
+        "incident response"
+      ],
+      "buyer_titles": [
+        "CISO",
+        "Head of Information Security",
+        "IT Director",
+        "Head of IT",
+        "Learning and Development"
+      ],
+      "programmes": [
+        {
+          "name": "Cyber Security Technician (Level 3)",
+          "url": "https://www.wtd.org.uk/individual-programme/level-3-cyber-security-technician-/",
+          "facts": "Threat detection, incident response and security tools. 17 months (14 + 3 EPA). Online, 95–100% funded for employers.",
+          "pitch": "a funded Level 3 apprenticeship covering threat detection, incident response and security tools, delivered online"
+        },
+        {
+          "name": "Cyber Security Technologist (Level 4)",
+          "url": "https://www.wtd.org.uk/individual-programme/cyber-security-technologist/",
+          "facts": "Threat analysis, cryptography and security design. 27 months (24 + 3 EPA). Next step for IT and junior security staff ready to specialise.",
+          "pitch": "a funded Level 4 apprenticeship for IT staff ready to specialise in threat analysis and security design"
+        }
+      ]
+    },
+    "data": {
+      "label": "Data",
+      "keywords": [
+        "data",
+        "data analysis",
+        "analytics",
+        "power bi",
+        "sql",
+        "business intelligence",
+        "bi",
+        "reporting",
+        "data governance"
+      ],
+      "buyer_titles": [
+        "Head of Data",
+        "Chief Data Officer",
+        "BI Manager",
+        "Finance Director",
+        "Learning and Development"
+      ],
+      "programmes": [
+        {
+          "name": "Data Technician (Level 3)",
+          "url": "https://www.wtd.org.uk/individual-programme/data-technician/",
+          "facts": "Data analysis, SQL, Power BI and data governance. 17 months (14 + 3 EPA). 95–100% funded for most UK employers.",
+          "pitch": "a funded Level 3 apprenticeship that builds hands-on skills in data analysis, SQL and Power BI"
+        }
+      ]
+    },
+    "business": {
+      "label": "Business and Project Management",
+      "keywords": [
+        "business analysis",
+        "business analyst",
+        "project management",
+        "project controls",
+        "administration",
+        "process improvement",
+        "service design",
+        "operations"
+      ],
+      "buyer_titles": [
+        "Operations Director",
+        "PMO Lead",
+        "Head of Change",
+        "HR Director",
+        "Learning and Development"
+      ],
+      "programmes": [
+        {
+          "name": "Business Analyst (Level 4)",
+          "url": "https://www.wtd.org.uk/individual-programme/level-4-business-analyst/",
+          "facts": "Analyse business challenges, improve processes and support digital transformation. 18 months training + 5 months EPA. Online.",
+          "pitch": "a funded Level 4 apprenticeship that helps staff analyse business problems and improve processes"
+        },
+        {
+          "name": "Associate Project Manager (Level 4)",
+          "url": "https://www.wtd.org.uk/individual-programme/level-4-associate-project-manager/",
+          "facts": "Builds skills to manage projects effectively. Online via live workshops and 1-to-1 tutor support.",
+          "pitch": "a funded Level 4 apprenticeship that builds confident project managers from within your team"
+        },
+        {
+          "name": "Project Controls Technician (Level 3)",
+          "url": "https://www.wtd.org.uk/individual-programme/level-3-project-controls-technician/",
+          "facts": "Monitoring project progress across engineering, construction, manufacturing and infrastructure. Online virtual classrooms plus software training.",
+          "pitch": "a funded Level 3 apprenticeship for staff who track project progress and keep delivery on course"
+        },
+        {
+          "name": "Business Administrator (Level 3)",
+          "url": "https://www.wtd.org.uk/individual-programme/business-administrator/",
+          "facts": "Turns day-to-day office roles into a recognised qualification.",
+          "pitch": "a funded Level 3 apprenticeship that turns day-to-day office roles into a recognised qualification"
+        }
+      ]
+    },
+    "customer_service": {
+      "label": "Customer Service",
+      "keywords": [
+        "customer service",
+        "customer experience",
+        "cx",
+        "contact centre",
+        "call centre",
+        "complaints",
+        "customer support"
+      ],
+      "buyer_titles": [
+        "Head of Customer Service",
+        "Customer Experience Director",
+        "Contact Centre Manager",
+        "Learning and Development"
+      ],
+      "programmes": [
+        {
+          "name": "Customer Service Specialist (Level 3)",
+          "url": "https://wtd.org.uk/individual-programme/customer-service-specialist/",
+          "facts": "Trains customer-facing staff to handle complex, escalated cases. 15 months (12 training + 3 EPA). Online UK-wide, 95–100% funded for most employers.",
+          "pitch": "a funded Level 3 apprenticeship that trains customer-facing staff to handle complex and escalated cases"
+        }
+      ]
+    },
+    "marketing": {
+      "label": "Marketing",
+      "keywords": [
+        "marketing",
+        "digital marketing",
+        "content",
+        "social media",
+        "campaigns",
+        "seo",
+        "paid media"
+      ],
+      "buyer_titles": [
+        "Marketing Director",
+        "Head of Marketing",
+        "CMO",
+        "Learning and Development"
+      ],
+      "programmes": [
+        {
+          "name": "Multi-Channel Marketer (Level 3)",
+          "url": "https://www.wtd.org.uk/individual-programme/multi-channel-marketer/",
+          "facts": "For teams bringing campaigns, content and analytics in-house. Apprentices learn across paid, owned and earned channels while working on the real marketing calendar.",
+          "pitch": "a funded Level 3 apprenticeship for teams bringing campaigns, content and analytics in-house"
+        }
+      ]
+    },
+    "food_drink": {
+      "label": "Food and Drink / Butchery",
+      "keywords": [
+        "food manufacturing",
+        "food production",
+        "food and drink",
+        "butchery",
+        "butcher",
+        "meat",
+        "food processing"
+      ],
+      "buyer_titles": [
+        "Operations Director",
+        "Production Manager",
+        "Site Manager",
+        "HR Manager",
+        "Early Careers Manager"
+      ],
+      "programmes": [
+        {
+          "name": "Food and Drink Process Operator (Level 2)",
+          "url": "https://www.wtd.org.uk/individual-programme/food-drink-process-operator/",
+          "facts": "Off-the-job hours planned around real shift patterns so production keeps moving.",
+          "pitch": "a funded Level 2 apprenticeship with off-the-job hours planned around your shift patterns"
+        },
+        {
+          "name": "Butcher (Level 3)",
+          "url": "https://www.wtd.org.uk/programmes/category/butcher-apprenticeship/",
+          "facts": "A rare specialism few providers offer, delivered by tutors with meat-industry backgrounds across retail, processing and wholesale.",
+          "pitch": "a funded Level 3 Butcher apprenticeship taught by tutors with real meat-industry backgrounds"
+        }
+      ]
+    },
+    "engineering": {
+      "label": "Engineering and Manufacturing",
+      "keywords": [
+        "engineering",
+        "manufacturing",
+        "production",
+        "operators",
+        "technicians",
+        "lean",
+        "shop floor"
+      ],
+      "buyer_titles": [
+        "Operations Director",
+        "Plant Manager",
+        "Engineering Manager",
+        "HR Manager"
+      ],
+      "programmes": [
+        {
+          "name": "Engineering and Manufacturing pathways",
+          "url": "https://www.wtd.org.uk/programmes/category/engineering-manufacturing-apprenticeship/",
+          "facts": "Practical, workshop-grounded training for operators and technicians, planned around shift patterns.",
+          "pitch": "funded, workshop-grounded training for operators and technicians, planned around shift patterns"
+        }
+      ]
+    }
+  }
+}

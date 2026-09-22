@@ -1,0 +1,21 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+outputs/*
+!outputs/.gitkeep
+data/cache/*
+!data/cache/.gitkeep
+data/send_log.json
+
+# Web workspace
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+frontend/*.tsbuildinfo
+.env
+.venv/
+.pytest_cache/
+data/*.sqlite3*
+__pycache__/
+*.pyc

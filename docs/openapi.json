@@ -1,0 +1,2231 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "WTD Lead Generation API",
+    "description": "Workspace routes require X-API-Key. Microsoft login is not required for research or editing. Approving, sending and resolving email require a connected Microsoft mailbox via X-Session-Token.",
+    "version": "3.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/microsoft/start": {
+      "post": {
+        "tags": [
+          "Microsoft mailbox connection"
+        ],
+        "summary": "Microsoft Start",
+        "operationId": "microsoft_start_api_v1_auth_microsoft_start_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/microsoft/callback": {
+      "post": {
+        "tags": [
+          "Microsoft mailbox connection"
+        ],
+        "summary": "Microsoft Callback",
+        "operationId": "microsoft_callback_api_v1_auth_microsoft_callback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MicrosoftCallback"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/session": {
+      "get": {
+        "tags": [
+          "Microsoft mailbox connection"
+        ],
+        "summary": "Session Info",
+        "operationId": "session_info_api_v1_auth_session_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BackendKey": []
+          },
+          {
+            "MicrosoftMailbox": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Microsoft mailbox connection"
+        ],
+        "summary": "Logout",
+        "operationId": "logout_api_v1_auth_session_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BackendKey": []
+          },
+          {
+            "MicrosoftMailbox": []
+          }
+        ]
+      }
+    },
+    "/api/v1/settings": {
+      "get": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "Public Settings",
+        "operationId": "public_settings_api_v1_settings_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/runs": {
+      "post": {
+        "tags": [
+          "Searches"
+        ],
+        "summary": "Create Run",
+        "operationId": "create_run_api_v1_runs_post",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Searches"
+        ],
+        "summary": "List Runs",
+        "operationId": "list_runs_api_v1_runs_get",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/runs/{run_id}": {
+      "get": {
+        "tags": [
+          "Searches"
+        ],
+        "summary": "Get Run",
+        "operationId": "get_run_api_v1_runs__run_id__get",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/runs/{run_id}/export": {
+      "get": {
+        "tags": [
+          "Searches"
+        ],
+        "summary": "Export",
+        "operationId": "export_api_v1_runs__run_id__export_get",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "csv",
+                "json"
+              ],
+              "type": "string",
+              "default": "csv",
+              "title": "Format"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads": {
+      "get": {
+        "tags": [
+          "Leads"
+        ],
+        "summary": "List Leads",
+        "operationId": "list_leads_api_v1_leads_get",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "tier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "Cool",
+                    "Warm",
+                    "Hot"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tier"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/{lead_id}": {
+      "get": {
+        "tags": [
+          "Leads"
+        ],
+        "summary": "Get Lead",
+        "operationId": "get_lead_api_v1_leads__lead_id__get",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lead Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/emails": {
+      "get": {
+        "tags": [
+          "Email review"
+        ],
+        "summary": "List Emails",
+        "operationId": "list_emails_api_v1_emails_get",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "draft",
+                    "ready",
+                    "sending",
+                    "sent",
+                    "failed",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/emails/send-ready": {
+      "post": {
+        "tags": [
+          "Email delivery"
+        ],
+        "summary": "Send Ready",
+        "operationId": "send_ready_api_v1_emails_send_ready_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendReady"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BackendKey": [],
+            "MicrosoftMailbox": []
+          }
+        ]
+      }
+    },
+    "/api/v1/emails/{email_id}": {
+      "get": {
+        "tags": [
+          "Email review"
+        ],
+        "summary": "Get Email",
+        "operationId": "get_email_api_v1_emails__email_id__get",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "email_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Email review"
+        ],
+        "summary": "Edit Email",
+        "operationId": "edit_email_api_v1_emails__email_id__patch",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "email_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/emails/{email_id}/approval": {
+      "post": {
+        "tags": [
+          "Email review"
+        ],
+        "summary": "Approve Email",
+        "operationId": "approve_email_api_v1_emails__email_id__approval_post",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "email_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Approval"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Setting ready_to_send=true also requires X-Session-Token for the sending mailbox. Removing approval requires only X-API-Key."
+      }
+    },
+    "/api/v1/emails/{email_id}/attempts": {
+      "get": {
+        "tags": [
+          "Email delivery"
+        ],
+        "summary": "Attempts",
+        "operationId": "attempts_api_v1_emails__email_id__attempts_get",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "email_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/emails/{email_id}/resolve": {
+      "post": {
+        "tags": [
+          "Email delivery"
+        ],
+        "summary": "Resolve",
+        "description": "Use only AFTER checking Outlook Sent Items or Exchange message trace to confirm the outcome of an unknown delivery.",
+        "operationId": "resolve_api_v1_emails__email_id__resolve_post",
+        "security": [
+          {
+            "BackendKey": [],
+            "MicrosoftMailbox": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "email_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeliveryResolution"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/knowledge": {
+      "get": {
+        "tags": [
+          "Company knowledge"
+        ],
+        "summary": "Knowledge",
+        "operationId": "knowledge_api_v1_knowledge_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Company knowledge"
+        ],
+        "summary": "Update Knowledge",
+        "operationId": "update_knowledge_api_v1_knowledge_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeEdit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lookups/{field}": {
+      "get": {
+        "tags": [
+          "ZoomInfo"
+        ],
+        "summary": "Lookups",
+        "operationId": "lookups_api_v1_lookups__field__get",
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "intent-topics",
+                "countries",
+                "states",
+                "metro-regions",
+                "industries",
+                "employee-count",
+                "revenue-ranges",
+                "tech-products",
+                "management-levels"
+              ],
+              "type": "string",
+              "title": "Field"
+            }
+          },
+          {
+            "name": "mock",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Mock"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Refresh"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/zoominfo/test-connection": {
+      "post": {
+        "tags": [
+          "ZoomInfo"
+        ],
+        "summary": "Test Zoominfo Connection",
+        "description": "Check OAuth and a fresh topic lookup; does not enrich contacts or send email.",
+        "operationId": "test_zoominfo_connection_api_v1_zoominfo_test_connection_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BackendKey": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Approval": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "ready_to_send": {
+            "type": "boolean",
+            "title": "Ready To Send"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "ready_to_send"
+        ],
+        "title": "Approval"
+      },
+      "Contact": {
+        "properties": {
+          "person_id": {
+            "type": "string",
+            "title": "Person Id"
+          },
+          "first_name": {
+            "type": "string",
+            "title": "First Name",
+            "default": ""
+          },
+          "last_name": {
+            "type": "string",
+            "title": "Last Name",
+            "default": ""
+          },
+          "job_title": {
+            "type": "string",
+            "title": "Job Title",
+            "default": ""
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "default": ""
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone",
+            "default": ""
+          },
+          "management_level": {
+            "type": "string",
+            "title": "Management Level",
+            "default": ""
+          },
+          "accuracy_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accuracy Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id"
+        ],
+        "title": "Contact"
+      },
+      "DeliveryResolution": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "delivered": {
+            "type": "boolean",
+            "title": "Delivered"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "delivered"
+        ],
+        "title": "DeliveryResolution"
+      },
+      "DeliveryResult": {
+        "properties": {
+          "email_id": {
+            "type": "string",
+            "title": "Email Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "sent",
+              "skipped",
+              "failed",
+              "unknown"
+            ],
+            "title": "Status"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email_id",
+          "status",
+          "detail"
+        ],
+        "title": "DeliveryResult"
+      },
+      "DraftEdit": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "to_email": {
+            "type": "string",
+            "format": "email",
+            "title": "To Email"
+          },
+          "to_name": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "To Name",
+            "default": ""
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Subject"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Body"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "to_email",
+          "subject",
+          "body"
+        ],
+        "title": "DraftEdit"
+      },
+      "EmailList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EmailView"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "EmailList"
+      },
+      "EmailView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Id"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "to_name": {
+            "type": "string",
+            "title": "To Name"
+          },
+          "to_email": {
+            "type": "string",
+            "title": "To Email"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "programme": {
+            "type": "string",
+            "title": "Programme"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "ready",
+              "sending",
+              "sent",
+              "failed",
+              "unknown"
+            ],
+            "title": "Status"
+          },
+          "ready_to_send": {
+            "type": "boolean",
+            "title": "Ready To Send"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "approved_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved Version"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "sent_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent By"
+          },
+          "sender_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sender Email"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Id"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "run_id",
+          "company_name",
+          "to_name",
+          "to_email",
+          "subject",
+          "body",
+          "programme",
+          "status",
+          "ready_to_send",
+          "version",
+          "updated_at"
+        ],
+        "title": "EmailView"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IntentSignal": {
+        "properties": {
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "default": ""
+          },
+          "signal_score": {
+            "type": "integer",
+            "title": "Signal Score",
+            "default": 0
+          },
+          "audience_strength": {
+            "type": "string",
+            "title": "Audience Strength",
+            "default": ""
+          },
+          "signal_date": {
+            "type": "string",
+            "title": "Signal Date",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "topic"
+        ],
+        "title": "IntentSignal"
+      },
+      "KnowledgeEdit": {
+        "properties": {
+          "profile": {
+            "type": "string",
+            "maxLength": 60000,
+            "minLength": 50,
+            "title": "Profile"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "profile"
+        ],
+        "title": "KnowledgeEdit"
+      },
+      "LeadList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LeadView"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "LeadList"
+      },
+      "LeadView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "company_id": {
+            "type": "string",
+            "title": "Company Id"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "website": {
+            "type": "string",
+            "title": "Website",
+            "default": ""
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score",
+            "default": 0
+          },
+          "tier": {
+            "type": "string",
+            "title": "Tier",
+            "default": ""
+          },
+          "score_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Score Reasons"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/IntentSignal"
+            },
+            "type": "array",
+            "title": "Signals"
+          },
+          "contacts": {
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            },
+            "type": "array",
+            "title": "Contacts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "run_id",
+          "company_id",
+          "company_name"
+        ],
+        "title": "LeadView"
+      },
+      "MicrosoftCallback": {
+        "properties": {
+          "flow_handle": {
+            "type": "string",
+            "maxLength": 43,
+            "minLength": 43,
+            "title": "Flow Handle"
+          },
+          "response": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Response"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "flow_handle",
+          "response"
+        ],
+        "title": "MicrosoftCallback"
+      },
+      "RunCreate": {
+        "properties": {
+          "intent_topics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Intent Topics"
+          },
+          "min_signal_score": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 60.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Signal Score"
+          },
+          "max_signal_score": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 60.0,
+            "title": "Max Signal Score",
+            "default": 100
+          },
+          "signal_start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signal Start Date"
+          },
+          "signal_end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signal End Date"
+          },
+          "audience_strength_min": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D",
+                  "E"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audience Strength Min"
+          },
+          "audience_strength_max": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D",
+                  "E"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audience Strength Max"
+          },
+          "state": {
+            "type": "string",
+            "maxLength": 300,
+            "title": "State",
+            "default": ""
+          },
+          "metro_region": {
+            "type": "string",
+            "maxLength": 300,
+            "title": "Metro Region",
+            "default": ""
+          },
+          "industry_codes": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Industry Codes",
+            "default": ""
+          },
+          "employee_count": {
+            "type": "string",
+            "maxLength": 300,
+            "title": "Employee Count",
+            "default": ""
+          },
+          "revenue": {
+            "type": "string",
+            "maxLength": 300,
+            "title": "Revenue",
+            "default": ""
+          },
+          "tech_products": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Tech Products",
+            "default": ""
+          },
+          "query": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 3,
+            "title": "Query",
+            "examples": [
+              "Companies exploring AI training in the UK"
+            ]
+          },
+          "mock": {
+            "type": "boolean",
+            "title": "Mock",
+            "default": false
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "default": 10
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "min_tier": {
+            "type": "string",
+            "enum": [
+              "Cool",
+              "Warm",
+              "Hot"
+            ],
+            "title": "Min Tier",
+            "default": "Cool"
+          },
+          "contacts_per_lead": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Contacts Per Lead",
+            "default": 1
+          },
+          "find_buyers": {
+            "type": "boolean",
+            "title": "Find Buyers",
+            "default": true
+          },
+          "enrich": {
+            "type": "boolean",
+            "title": "Enrich",
+            "default": true
+          },
+          "write_emails": {
+            "type": "boolean",
+            "title": "Write Emails",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "RunCreate"
+      },
+      "RunDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "mock": {
+            "type": "boolean",
+            "title": "Mock"
+          },
+          "request": {
+            "$ref": "#/components/schemas/RunCreate"
+          },
+          "result": {
+            "$ref": "#/components/schemas/RunProgress"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "lead_count": {
+            "type": "integer",
+            "title": "Lead Count"
+          },
+          "email_count": {
+            "type": "integer",
+            "title": "Email Count"
+          },
+          "ready_count": {
+            "type": "integer",
+            "title": "Ready Count"
+          },
+          "sent_count": {
+            "type": "integer",
+            "title": "Sent Count"
+          },
+          "leads": {
+            "items": {
+              "$ref": "#/components/schemas/LeadView"
+            },
+            "type": "array",
+            "title": "Leads"
+          },
+          "emails": {
+            "items": {
+              "$ref": "#/components/schemas/EmailView"
+            },
+            "type": "array",
+            "title": "Emails"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "query",
+          "status",
+          "mock",
+          "request",
+          "result",
+          "created_at",
+          "updated_at",
+          "lead_count",
+          "email_count",
+          "ready_count",
+          "sent_count",
+          "leads",
+          "emails"
+        ],
+        "title": "RunDetail"
+      },
+      "RunList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RunSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "RunList"
+      },
+      "RunProgress": {
+        "properties": {
+          "plan": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
+          },
+          "progress": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Progress"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors"
+          }
+        },
+        "type": "object",
+        "title": "RunProgress"
+      },
+      "RunSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "mock": {
+            "type": "boolean",
+            "title": "Mock"
+          },
+          "request": {
+            "$ref": "#/components/schemas/RunCreate"
+          },
+          "result": {
+            "$ref": "#/components/schemas/RunProgress"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "lead_count": {
+            "type": "integer",
+            "title": "Lead Count"
+          },
+          "email_count": {
+            "type": "integer",
+            "title": "Email Count"
+          },
+          "ready_count": {
+            "type": "integer",
+            "title": "Ready Count"
+          },
+          "sent_count": {
+            "type": "integer",
+            "title": "Sent Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "query",
+          "status",
+          "mock",
+          "request",
+          "result",
+          "created_at",
+          "updated_at",
+          "lead_count",
+          "email_count",
+          "ready_count",
+          "sent_count"
+        ],
+        "title": "RunSummary"
+      },
+      "SendItem": {
+        "properties": {
+          "email_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Email Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email_id",
+          "expected_version"
+        ],
+        "title": "SendItem"
+      },
+      "SendReady": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Run Id"
+          },
+          "emails": {
+            "items": {
+              "$ref": "#/components/schemas/SendItem"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Emails"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "run_id",
+          "emails"
+        ],
+        "title": "SendReady"
+      },
+      "SendResponse": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/DeliveryResult"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "sent_count": {
+            "type": "integer",
+            "title": "Sent Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "results",
+          "sent_count"
+        ],
+        "title": "SendResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "BackendKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      },
+      "MicrosoftMailbox": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Session-Token"
+      }
+    }
+  }
+}

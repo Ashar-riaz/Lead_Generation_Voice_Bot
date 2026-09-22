@@ -1,0 +1,152 @@
+{
+  "_note": "FICTIONAL sample data for --mock mode. Not real companies or people.",
+  "intent_topics": [
+    "Artificial Intelligence",
+    "AI Training",
+    "Generative AI",
+    "Machine Learning",
+    "Workflow Automation",
+    "Cybersecurity",
+    "Data Analytics",
+    "Power BI",
+    "Customer Experience",
+    "Project Management",
+    "Digital Marketing",
+    "Food Safety",
+    "Employee Training",
+    "Apprenticeships",
+    "Learning Management Systems"
+  ],
+  "companies": [
+    {
+      "company_id": "900001",
+      "company_name": "Northbridge Logistics Ltd (SAMPLE)",
+      "website": "northbridge-logistics.example",
+      "signals": [
+        {
+          "topic": "Artificial Intelligence",
+          "category": "AI",
+          "signal_score": 92,
+          "audience_strength": "A",
+          "signal_date": "2026-09-08"
+        },
+        {
+          "topic": "AI Training",
+          "category": "Training",
+          "signal_score": 85,
+          "audience_strength": "B",
+          "signal_date": "2026-09-10"
+        }
+      ],
+      "recommended_contacts": [
+        {
+          "person_id": "100001",
+          "first_name": "Priya",
+          "last_name": "Shah",
+          "job_title": "Chief Operating Officer",
+          "email": "priya.shah@northbridge-logistics.example"
+        }
+      ],
+      "buyers": [
+        {
+          "person_id": "100002",
+          "first_name": "Tom",
+          "last_name": "Hughes",
+          "job_title": "Head of Learning and Development",
+          "management_level": "Director",
+          "accuracy_score": 94,
+          "email": "tom.hughes@northbridge-logistics.example"
+        }
+      ]
+    },
+    {
+      "company_id": "900002",
+      "company_name": "Calder Housing Group (SAMPLE)",
+      "website": "calderhousing.example",
+      "signals": [
+        {
+          "topic": "Generative AI",
+          "category": "AI",
+          "signal_score": 78,
+          "audience_strength": "C",
+          "signal_date": "2026-09-01"
+        }
+      ],
+      "recommended_contacts": [],
+      "buyers": [
+        {
+          "person_id": "100003",
+          "first_name": "Sarah",
+          "last_name": "Okafor",
+          "job_title": "HR Director",
+          "management_level": "Director",
+          "accuracy_score": 90,
+          "email": "sarah.okafor@calderhousing.example"
+        }
+      ]
+    },
+    {
+      "company_id": "900003",
+      "company_name": "Brightmoor Foods plc (SAMPLE)",
+      "website": "brightmoorfoods.example",
+      "signals": [
+        {
+          "topic": "Workflow Automation",
+          "category": "AI",
+          "signal_score": 71,
+          "audience_strength": "D",
+          "signal_date": "2026-08-20"
+        },
+        {
+          "topic": "Food Safety",
+          "category": "Operations",
+          "signal_score": 88,
+          "audience_strength": "B",
+          "signal_date": "2026-09-05"
+        }
+      ],
+      "recommended_contacts": [
+        {
+          "person_id": "100004",
+          "first_name": "Daniel",
+          "last_name": "Price",
+          "job_title": "Operations Manager"
+        }
+      ],
+      "buyers": []
+    },
+    {
+      "company_id": "900004",
+      "company_name": "Harlow Data Services (SAMPLE)",
+      "website": "harlowdata.example",
+      "signals": [
+        {
+          "topic": "Cybersecurity",
+          "category": "Security",
+          "signal_score": 95,
+          "audience_strength": "A",
+          "signal_date": "2026-09-11"
+        },
+        {
+          "topic": "Data Analytics",
+          "category": "Data",
+          "signal_score": 81,
+          "audience_strength": "B",
+          "signal_date": "2026-09-02"
+        }
+      ],
+      "recommended_contacts": [],
+      "buyers": [
+        {
+          "person_id": "100005",
+          "first_name": "Aisha",
+          "last_name": "Rahman",
+          "job_title": "Head of IT",
+          "management_level": "Director",
+          "accuracy_score": 92,
+          "email": "aisha.rahman@harlowdata.example"
+        }
+      ]
+    }
+  ]
+}

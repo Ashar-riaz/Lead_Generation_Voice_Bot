@@ -1,0 +1,16 @@
+fastapi==0.141.1
+uvicorn==0.53.0
+pydantic==2.13.5
+email-validator==2.3.0
+requests==2.34.2
+python-dotenv==1.2.3
+langgraph==1.2.11
+google-genai>=1.0,<3     # LLM_PROVIDER=gemini
+anthropic>=0.40,<1      # LLM_PROVIDER=anthropic
+httpx==0.28.1
+pytest==9.1.1
+# Optional: LangGraph Studio (`langgraph dev`)
+# langgraph-cli[inmem]
+msal==1.39.0
+PyJWT[crypto]==2.14.0
+cryptography==50.0.1
