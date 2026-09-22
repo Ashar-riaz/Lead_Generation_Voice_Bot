@@ -11,10 +11,12 @@ import jwt
 import msal
 import requests
 from cryptography.fernet import Fernet, InvalidToken
+from email_validator import validate_email, EmailNotValidError
 
 from app.auth_store import AuthStore
 from app.store import StoreError
 from config.settings import Settings
+from app.mailbox_target import graph_mailbox_path
 
 SCOPES = ["User.Read", "Mail.Send", "Mail.Read"]  # MSAL adds openid, profile, offline_access.
 SESSION_SECONDS = 8 * 3600
@@ -26,6 +28,12 @@ class MicrosoftAuth:
         self._lock = RLock()  # One backend worker; refreshes and disconnects are serialized.
         self._jwks = None
 
+    @property
+    def scopes(self):
+        if self.settings.microsoft_mailbox_address:
+            return ["User.Read", "Mail.Send.Shared", "Mail.Read.Shared"]
+        return SCOPES
+
     def require_config(self):
         s = self.settings
         if not s.has_microsoft:
@@ -34,10 +42,14 @@ class MicrosoftAuth:
             UUID(s.microsoft_tenant_id)
             UUID(s.microsoft_client_id)
             Fernet(s.token_encryption_key.encode())
+            if s.microsoft_mailbox_address:
+                validate_email(s.microsoft_mailbox_address, check_deliverability=False)
+            elif s.microsoft_mailbox_user_id:
+                raise ValueError
             uri = urlparse(s.microsoft_redirect_uri)
             if not uri.hostname or (uri.scheme != "https" and not (uri.scheme == "http" and uri.hostname in ("localhost", "127.0.0.1"))) or uri.query or uri.fragment or uri.username:
                 raise ValueError
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, EmailNotValidError):
             raise StoreError(503, "Microsoft email configuration is invalid. Check tenant/client IDs, redirect URI and TOKEN_ENCRYPTION_KEY.") from None
 
     def encrypt(self, value: str) -> str:
@@ -59,7 +71,7 @@ class MicrosoftAuth:
         self.require_config()
         try:
             flow = self.client(msal.SerializableTokenCache()).initiate_auth_code_flow(
-                scopes=SCOPES, redirect_uri=self.settings.microsoft_redirect_uri,
+                scopes=self.scopes, redirect_uri=self.settings.microsoft_redirect_uri,
                 response_mode="query", prompt="select_account")
             if "auth_uri" not in flow or "state" not in flow:
                 raise ValueError
@@ -123,7 +135,31 @@ class MicrosoftAuth:
             self.store.logout(token)
 
     def public_user(self, user: dict) -> dict:
-        return {key: user[key] for key in ("object_id", "tenant_id", "name", "email")}
+        result = {key: user[key] for key in ("object_id", "tenant_id", "name", "email")}
+        result["account_email"] = user.get("account_email", user["email"])
+        address = self.settings.microsoft_mailbox_address
+        target = self.settings.microsoft_mailbox_user_id or address
+        result.update(shared=bool(address), mailbox_user_id=target or None,
+                      mailbox_key=("shared:" + target.lower() + ":" + address) if address else user["object_id"])
+        if address:
+            result["email"] = address
+        return result
+
+    def verify_mailbox_access(self, actor: dict):
+        """Read-only check; never sends a test email or implies Send As was granted."""
+        token = self.access_token(actor)
+        try:
+            response = requests.get("https://graph.microsoft.com/v1.0" + graph_mailbox_path(actor) + "/mailFolders/inbox",
+                params={"$select": "id"}, headers={"Authorization": f"Bearer {token}"},
+                timeout=(5, 15), allow_redirects=False)
+        except requests.RequestException:
+            raise StoreError(502, "Could not verify mailbox access. Try again later.") from None
+        if response.status_code in (401, 403, 404):
+            raise StoreError(403, "Mailbox access has not been granted. Ask your Microsoft 365 administrator for Full Access and Send As to the configured mailbox, grant Mail.Read.Shared and Mail.Send.Shared to this app, then reconnect. App ownership alone does not grant mailbox access.")
+        if response.status_code != 200:
+            raise StoreError(502, "Microsoft could not verify mailbox access. Try again later.")
+        return {"read_access": True, "mailbox": actor["email"],
+                "message": "Inbox access verified. Sending still requires Send As permission; no test email was sent."}
 
     def authenticate(self, token: str | None) -> dict:
         if not token or not re.fullmatch(r"[A-Za-z0-9_-]{43}", token):
@@ -157,7 +193,7 @@ class MicrosoftAuth:
             try:
                 client = self.client(cache)
                 accounts = [a for a in client.get_accounts() if a.get("local_account_id", "").lower() == oid and a.get("realm", "").lower() == tenant]
-                result = client.acquire_token_silent(SCOPES, account=accounts[0]) if len(accounts) == 1 else None
+                result = client.acquire_token_silent(self.scopes, account=accounts[0]) if len(accounts) == 1 else None
             except (ValueError, requests.RequestException):
                 raise StoreError(502, "Microsoft mailbox connection failed. Try again or reconnect in Connections.") from None
             if cache.has_state_changed:

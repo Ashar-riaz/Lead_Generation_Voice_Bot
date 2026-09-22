@@ -7,7 +7,7 @@ import time
 from urllib.parse import parse_qsl
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
 from fastapi.responses import Response
 from pydantic import Field, StrictBool
 from starlette.concurrency import run_in_threadpool
@@ -21,6 +21,7 @@ from app.store import StoreError
 from app.twilio_voice_service import VoiceSettings, TwilioVoiceService, normalise_phone
 from app.voice_agent import VoiceAgent, build_context
 from app.voice_call_context_service import VoiceCallContextService, TERMINAL
+from app.voice_analysis import VoiceAnalysis
 
 
 class CallPlan(RequestModel):
@@ -47,6 +48,7 @@ class VoiceController:
         self.store, self.settings, self.config = store, settings, voice_settings
         self.contexts = VoiceCallContextService(store)
         self.agent = VoiceAgent(settings)
+        self.analysis = VoiceAnalysis(store, self.contexts, settings)
         self.transport_factory = lambda: TwilioVoiceService(self.config)
         self._locks = [threading.Lock() for _ in range(64)]
 
@@ -56,7 +58,8 @@ class VoiceController:
             "contact_name": row["context"]["contact_name"], "purpose": row["context"]["call_purpose"],
             "company_name": row["context"]["prospect"]["company_name"],
             "training_focus": row["context"]["training_focus"], "voice": self.config.voice,
-            "greeting": self.agent.greeting(row["context"]), "transcript": self.contexts.transcript(row["id"])}
+            "greeting": self.agent.greeting(row["context"]), "transcript": self.contexts.transcript(row["id"]),
+            "analysis": self.analysis.view(row["id"])}
 
     def start(self, call_id, version):
         self.config.validate()
@@ -167,7 +170,7 @@ def install_voice(app, settings, store, authenticate):
         return controller.start(call_id.hex, payload.expected_version)
 
     @api.post("/calls/{call_id}/sync")
-    def sync(call_id: UUID):
+    def sync(call_id: UUID, tasks: BackgroundTasks):
         row = controller.contexts.get_call_context(call_id.hex)
         if not row["call_sid"]:
             raise StoreError(409, "No Twilio SID is available yet. Check the callback configuration or Twilio logs.")
@@ -176,7 +179,15 @@ def install_voice(app, settings, store, authenticate):
         except Exception:
             raise StoreError(502, "Could not check the call with Twilio. No new call was placed.") from None
         controller.contexts.bind(row["id"], call.sid, call.to, call._from)
-        return controller.public(controller.contexts.status(row["id"], call.status))
+        updated = controller.contexts.status(row["id"], call.status)
+        if updated["status"] in TERMINAL:
+            tasks.add_task(controller.analysis.run, row["id"])
+        return controller.public(updated)
+
+    @api.post("/calls/{call_id}/analysis")
+    def analyse(call_id: UUID):
+        controller.analysis.run(call_id.hex, retry=True)
+        return controller.public(controller.contexts.get_call_context(call_id.hex))
 
     @api.post("/calls/{call_id}/resolve")
     def resolve(call_id: UUID, payload: CallResolution):
@@ -226,10 +237,12 @@ def install_voice(app, settings, store, authenticate):
         return xml_response(await run_in_threadpool(controller.conversation, call_id.hex, turn, heard))
 
     @webhooks.post("/status/{call_id}")
-    async def status(call_id: UUID, request: Request):
+    async def status(call_id: UUID, request: Request, tasks: BackgroundTasks):
         form = await verified_form(request, call_id.hex)
         sequence = form.get("SequenceNumber", "")
-        controller.contexts.status(call_id.hex, form.get("CallStatus", ""), int(sequence) if sequence.isdigit() else None)
+        row = controller.contexts.status(call_id.hex, form.get("CallStatus", ""), int(sequence) if sequence.isdigit() else None)
+        if row["status"] in TERMINAL:
+            tasks.add_task(controller.analysis.run, call_id.hex)
         return Response(status_code=204)
 
     @webhooks.post("/fallback/{call_id}")

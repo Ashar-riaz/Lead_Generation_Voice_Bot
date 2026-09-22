@@ -1,4 +1,3 @@
-"""Mailbox-scoped conversations and versioned, manually approved reply drafts."""
 from __future__ import annotations
 
 import json
@@ -6,6 +5,7 @@ import time
 from uuid import uuid4
 
 from app.store import StoreError, now
+from app.mailbox_target import mailbox_key
 
 
 class ConversationStore:
@@ -39,6 +39,9 @@ class ConversationStore:
             db.execute("""UPDATE mail_replies SET status='unknown',ready_to_send=0,approved_version=NULL,
                           last_error='Backend restarted while sending. Check Outlook Sent Items before resolving.'
                           WHERE status='sending'""")
+            if "mailbox_key" not in {r[1] for r in db.execute("PRAGMA table_info(mail_threads)")}:
+                db.execute("ALTER TABLE mail_threads ADD COLUMN mailbox_key TEXT")
+                db.execute("UPDATE mail_threads SET mailbox_key=mailbox_id")
 
     def ensure(self, email_id, actor, db=None):
         if db is None:
@@ -47,14 +50,17 @@ class ConversationStore:
         email = self.store.email(email_id, db)
         if email["sent_by"] != actor["object_id"]:
             raise StoreError(403, "Connect the Microsoft mailbox that sent this email to view or reply to its conversation.")
+        if (email["sender_email"] or "").lower() != actor["email"].lower():
+            raise StoreError(403, "This email was sent from a different mailbox. Restore that mailbox configuration to view its conversation.")
         if email["status"] != "sent" or not email["message_id"]:
             raise StoreError(409, "Conversations are available after the original email is confirmed sent.")
         if db.execute("SELECT mock FROM runs WHERE id=?", (email["run_id"],)).fetchone()[0]:
             raise StoreError(409, "Sample leads cannot sync or send real email.")
-        db.execute("INSERT OR IGNORE INTO mail_threads(email_id,tenant_id,mailbox_id) VALUES(?,?,?)",
-                   (email_id, actor["tenant_id"], actor["object_id"]))
+        db.execute("INSERT OR IGNORE INTO mail_threads(email_id,tenant_id,mailbox_id,mailbox_key) VALUES(?,?,?,?)",
+                   (email_id, actor["tenant_id"], actor["object_id"], mailbox_key(actor)))
         thread = dict(db.execute("SELECT * FROM mail_threads WHERE email_id=?", (email_id,)).fetchone())
-        if thread["tenant_id"] != actor["tenant_id"] or thread["mailbox_id"] != actor["object_id"]:
+        if (thread["tenant_id"] != actor["tenant_id"] or thread["mailbox_id"] != actor["object_id"]
+                or thread["mailbox_key"] != mailbox_key(actor)):
             raise StoreError(403, "This conversation belongs to another mailbox.")
         return email, thread
 

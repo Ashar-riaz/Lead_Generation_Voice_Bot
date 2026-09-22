@@ -96,6 +96,10 @@ class VoiceCallContextService:
                 raise StoreError(409, "Mark this exact saved call plan Ready to call first.")
             if time.time() - row["approved_at"] > 3600 or row["from_number"] != from_number:
                 raise StoreError(409, "Call approval expired or the caller number changed. Prepare and approve a new plan.")
+            current_lead = db.execute("SELECT payload FROM leads WHERE id=?", (row["lead_id"],)).fetchone()
+            saved_version = row["context"].get("prospect", {}).get("contact_version", 1)
+            if not current_lead or json.loads(current_lead[0]).get("contact_version", 1) != saved_version:
+                raise StoreError(409, "Contact details changed. Prepare and approve a new call plan.")
             mock = db.execute("SELECT r.mock FROM leads l JOIN runs r ON r.id=l.run_id WHERE l.id=?", (row["lead_id"],)).fetchone()
             if not mock or mock[0]:
                 raise StoreError(409, "Sample leads cannot receive real calls.")

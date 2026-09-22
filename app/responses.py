@@ -13,6 +13,10 @@ class LeadView(BaseModel):
     company_id: str
     company_name: str
     website: str = ""
+    company_phone: str = ""
+    company_phone_source: str = ""
+    zoominfo_company_phone: str = ""
+    contact_version: int = 1
     score: int = 0
     tier: str = ""
     score_reasons: list[str] = Field(default_factory=list)
@@ -36,6 +40,7 @@ class EmailView(BaseModel):
     approved_version: int | None = None
     approved_at: str | None = None
     approved_by: str | None = None
+    approved_mailbox: str | None = None
     sent_by: str | None = None
     sender_email: str | None = None
     sent_at: str | None = None

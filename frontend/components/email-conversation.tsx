@@ -27,7 +27,7 @@ export default function EmailConversation({ email, mailbox, onConnect }: {
   const [verified, setVerified] = useState(false);
   const syncLock = useRef(false);
   const mounted = useRef(true);
-  const eligible = !!email && email.status === "sent" && !!mailbox && email.sent_by === mailbox.object_id;
+  const eligible = !!email && email.status === "sent" && !!mailbox && email.sent_by === mailbox.object_id && email.sender_email?.toLowerCase() === mailbox.email.toLowerCase();
   const base = `emails/${email?.id}`;
   const dirty = !!draft && body !== draft.body;
   const locked = !!draft && ["sending", "sent", "unknown"].includes(draft.status);
@@ -87,7 +87,7 @@ export default function EmailConversation({ email, mailbox, onConnect }: {
   }
 
   if (!email || email.status !== "sent") return <div className="empty-state compact"><Mail size={30} /><h3>Replies appear after sending</h3><p>Send your reviewed email first, then return here to see the contact’s response.</p></div>;
-  if (!mailbox || email.sent_by !== mailbox.object_id) return <div className="notice neutral"><div><strong>Connect the sending mailbox</strong><p>Use {email.sender_email || "the Microsoft mailbox that sent this email"} to read this conversation and reply.</p><button className="secondary" onClick={onConnect}>Open mailbox connections</button></div></div>;
+  if (!mailbox || email.sent_by !== mailbox.object_id || email.sender_email?.toLowerCase() !== mailbox.email.toLowerCase()) return <div className="notice neutral"><div><strong>Connect the sending mailbox</strong><p>Use {email.sender_email || "the Microsoft mailbox that sent this email"} to read this conversation and reply.</p><button className="secondary" onClick={onConnect}>Open mailbox connections</button></div></div>;
 
   return <section aria-label="Email conversation">
     <div className="row between" style={{ gap: 12, flexWrap: "wrap", marginBottom: 14 }}>

@@ -28,6 +28,8 @@ from app.services import EmailService, run_search
 from app.store import Store, StoreError
 from app.voice_routes import install_voice
 from app.conversation_routes import install_conversations
+from app.mailbox_target import mailbox_key
+from app.contact_routes import install_contacts
 
 
 def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
@@ -42,6 +44,7 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
         auth_store.initialize()
         store.recover_interrupted()
         app.state.voice_store.initialize()
+        app.state.voice.analysis.initialize()
         app.state.conversations.data.initialize()
         yield
 
@@ -69,7 +72,10 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
             raise StoreError(401, "Invalid or missing API key")
 
     def connected_mailbox(token: str | None = Depends(session_header), _=Depends(authenticate)):
-        return microsoft.authenticate(token)
+        actor = microsoft.authenticate(token)
+        if actor.get("shared"):
+            microsoft.verify_mailbox_access(actor)
+        return actor
 
     auth_api = APIRouter(prefix="/api/v1/auth", dependencies=[Depends(authenticate)], tags=["Microsoft mailbox connection"])
     api = APIRouter(prefix="/api/v1", dependencies=[Depends(authenticate)])
@@ -98,6 +104,10 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
             microsoft.logout(token)
         return {"connected": False, "mailbox": None}
 
+    @api.post("/mailbox/check", tags=["Microsoft mailbox connection"])
+    def check_mailbox(token: str | None = Depends(session_header)):
+        return microsoft.verify_mailbox_access(microsoft.authenticate(token))
+
     @app.get("/health", tags=["Health"])
     def health():
         return {"status": "ok", "version": "3.1.0"}
@@ -106,6 +116,7 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
     def public_settings():
         return {"zoominfo_configured": settings.has_zoominfo, "microsoft_configured": settings.has_microsoft,
                 "mail_provider": "microsoft_graph", "login_required": False,
+                "mailbox_address": settings.microsoft_mailbox_address,
                 "llm_provider": settings.llm_provider,
                 "llm_configured": (settings.llm_provider == "gemini" and bool(settings.gemini_api_key)) or (settings.llm_provider == "anthropic" and bool(settings.anthropic_api_key)),
                 "daily_send_limit": settings.daily_send_limit, "default_country": settings.default_country,
@@ -181,7 +192,10 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
     def approve_email(email_id: str, payload: Approval, token: str | None = Depends(session_header)):
         # Removing approval must remain possible after a mailbox expires or disconnects.
         user = microsoft.authenticate(token) if payload.ready_to_send else None
-        return store.approve(email_id, payload.expected_version, payload.ready_to_send, actor_id=user["object_id"] if user else None)
+        if user and user.get("shared"):
+            microsoft.verify_mailbox_access(user)
+        return store.approve(email_id, payload.expected_version, payload.ready_to_send,
+                             actor_id=user["object_id"] if user else None, mailbox=mailbox_key(user) if user else None)
 
     @api.get("/emails/{email_id}/attempts", tags=["Email delivery"])
     def attempts(email_id: str):
@@ -240,6 +254,7 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
             raise StoreError(502, str(exc)) from None
 
     install_voice(app, settings, store, authenticate)
+    install_contacts(app, settings, store, authenticate)
     install_conversations(app, settings, store, microsoft, connected_mailbox)
     app.include_router(auth_api)
     app.include_router(api)
@@ -253,7 +268,7 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
                     for operation in methods.values():
                         if isinstance(operation, dict) and "responses" in operation:
                             conversations = "/conversation" in path or "/replies" in path
-                            mail_required = path.startswith("/api/v1/emails/") and (conversations or path.endswith(("/send-ready", "/resolve")))
+                            mail_required = path == "/api/v1/mailbox/check" or (path.startswith("/api/v1/emails/") and (conversations or path.endswith(("/send-ready", "/resolve"))))
                             operation["security"] = [{"BackendKey": [], **({"MicrosoftMailbox": []} if mail_required else {})}]
                             if path.startswith("/api/v1/emails/") and path.endswith("/approval") and not conversations:
                                 operation["description"] = "Setting ready_to_send=true also requires X-Session-Token for the sending mailbox. Removing approval requires only X-API-Key."

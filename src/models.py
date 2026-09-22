@@ -19,6 +19,8 @@ class Contact:
     phone: str = ""
     management_level: str = ""
     accuracy_score: Optional[float] = None
+    phone_source: str = ""
+    name_source: str = ""
 
     @property
     def full_name(self) -> str:
@@ -44,6 +46,10 @@ class Lead:
     score: int = 0
     tier: str = ""
     score_reasons: list[str] = field(default_factory=list)
+    company_phone: str = ""
+    company_phone_source: str = ""
+    zoominfo_company_phone: str = ""
+    contact_version: int = 1
 
     def to_dict(self) -> dict:
         return asdict(self)

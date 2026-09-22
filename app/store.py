@@ -12,6 +12,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
+from app.mailbox_target import mailbox_key
 
 
 def now() -> str:
@@ -78,7 +79,7 @@ class Store:
             """)
             # Additive migration: preserve existing leads, drafts and delivery history.
             for table, additions in {
-                "emails": {"approved_by": "TEXT", "sent_by": "TEXT", "sender_email": "TEXT"},
+                "emails": {"approved_by": "TEXT", "sent_by": "TEXT", "sender_email": "TEXT", "approved_mailbox": "TEXT"},
                 "attempts": {"sender_oid": "TEXT", "sender_email": "TEXT", "provider": "TEXT"},
             }.items():
                 columns = {row[1] for row in db.execute(f"PRAGMA table_info({table})")}
@@ -224,16 +225,16 @@ class Store:
                        (str(data["to_email"]), data["to_name"], data["subject"], data["body"], now(), email_id))
         return self.email(email_id)
 
-    def approve(self, email_id: str, version: int, ready: bool, actor_id: str | None = None):
+    def approve(self, email_id: str, version: int, ready: bool, actor_id: str | None = None, mailbox: str | None = None):
         if ready and not actor_id:
             raise StoreError(401, "A connected Microsoft mailbox is required to approve email sending")
         with self.connection(write=True) as db:
             row = self.email(email_id, db)
             self.editable(row, version)
             new_version = version + 1
-            db.execute("""UPDATE emails SET ready_to_send=?,status=?,version=?,approved_version=?,approved_at=?,approved_by=?,last_error=NULL,updated_at=? WHERE id=?""",
+            db.execute("""UPDATE emails SET ready_to_send=?,status=?,version=?,approved_version=?,approved_at=?,approved_by=?,approved_mailbox=?,last_error=NULL,updated_at=? WHERE id=?""",
                        (int(ready), "ready" if ready else "draft", new_version, new_version if ready else None,
-                        now() if ready else None, actor_id if ready else None, now(), email_id))
+                        now() if ready else None, actor_id if ready else None, (mailbox or actor_id) if ready else None, now(), email_id))
         return self.email(email_id)
 
     def claim_send(self, email_id: str, run_id: str, version: int, daily_limit: int, suppressed: set, legacy_sent: set, legacy_today: set, actor: dict | None = None):
@@ -250,6 +251,8 @@ class Store:
                 raise StoreError(409, "This exact draft must be marked Ready to send first")
             if row["approved_by"] != actor["object_id"]:
                 raise StoreError(409, "Review and approve this draft with your Microsoft account before sending from your mailbox")
+            if row["approved_mailbox"] != mailbox_key(actor):
+                raise StoreError(409, "The sending mailbox changed. Review and approve this draft again before sending.")
             mock = db.execute("SELECT mock FROM runs WHERE id=?", (run_id,)).fetchone()[0]
             if mock:
                 raise StoreError(409, "Sample searches cannot send real emails. Run a live search first.")

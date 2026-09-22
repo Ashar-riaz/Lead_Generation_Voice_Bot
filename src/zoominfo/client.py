@@ -262,7 +262,36 @@ class ZoomInfoClient:
                 a = row.get("attributes", {})
                 target.email = a.get("email") or target.email
                 target.phone = a.get("phone") or target.phone
+                target.first_name = a.get("firstName") or target.first_name
+                target.last_name = a.get("lastName") or target.last_name
+                if a.get("phone"):
+                    target.phone_source = "zoominfo"
                 target.job_title = a.get("jobTitle") or target.job_title
                 levels = a.get("managementLevel") or []
                 target.management_level = ", ".join(levels) if isinstance(levels, list) else str(levels)
         return contacts
+
+    def company_phone(self, company_id: str) -> str:
+        """Retrieve only the selected company's phone. This enrichment can cost a credit."""
+        if not str(company_id).isdigit():
+            raise ZoomInfoError("This lead does not have a valid ZoomInfo company ID.")
+        payload = self._request("POST", "/data/v1/companies/enrich", body={"data": {
+            "type": "CompanyEnrich", "attributes": {
+                "matchCompanyInput": [{"companyId": int(company_id)}], "outputFields": ["id", "phone"]}}})
+        rows = payload.get("data", [])
+        if not isinstance(rows, list):
+            raise ZoomInfoError("ZoomInfo returned an invalid company enrichment response.")
+        for row in rows:
+            meta = row.get("meta") or {}
+            if row.get("type") != "Company" or meta.get("matchStatus") not in (None, "FULL_MATCH"):
+                continue
+            # Do not import a best-match number belonging to another company.
+            if str(row.get("id")) != str(company_id):
+                continue
+            phone = (row.get("attributes") or {}).get("phone")
+            if phone is None:
+                return ""
+            if not isinstance(phone, str) or len(phone) > 80:
+                raise ZoomInfoError("ZoomInfo returned an invalid company phone value.")
+            return phone.strip()
+        return ""

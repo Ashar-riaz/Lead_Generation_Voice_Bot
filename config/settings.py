@@ -62,6 +62,10 @@ class Settings:
     microsoft_client_id: str = field(default_factory=lambda: _env("MICROSOFT_CLIENT_ID"))
     microsoft_client_secret: str = field(default_factory=lambda: _env("MICROSOFT_CLIENT_SECRET"))
     microsoft_redirect_uri: str = field(default_factory=lambda: _env("MICROSOFT_REDIRECT_URI", "http://localhost:3000/api/auth/microsoft/callback"))
+    # Optional shared mailbox. Exchange must grant the connecting user access.
+    microsoft_mailbox_address: str = field(default_factory=lambda: _env("MICROSOFT_MAILBOX_ADDRESS").lower())
+    # Use its Entra object ID / UPN here if the mail address is only an alias.
+    microsoft_mailbox_user_id: str = field(default_factory=lambda: _env("MICROSOFT_MAILBOX_USER_ID"))
     token_encryption_key: str = field(default_factory=lambda: _env("TOKEN_ENCRYPTION_KEY"))
 
     @property

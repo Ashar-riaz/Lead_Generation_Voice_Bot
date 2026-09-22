@@ -5,19 +5,22 @@ import { api, company, dateLabel, payload, websiteUrl, type Attempt, type Delive
 
 import VoiceCallPanel from "./voice-call-panel";
 import EmailConversation from "./email-conversation";
+import ContactDetails from "./contact-details";
 
 type Props = { lead: Lead; email?: Draft; mock: boolean; mailbox: Mailbox | null; onConnect: () => void; onClose: () => void; onChange: () => Promise<void> };
-export default function EmailEditor({ lead, email, mock, mailbox, onConnect, onClose, onChange }: Props) {
+export default function EmailEditor({ lead: initialLead, email, mock, mailbox, onConnect, onClose, onChange }: Props) {
+  const [lead, setLead] = useState(initialLead);
+  useEffect(() => setLead(initialLead), [initialLead]);
   const dialog = useRef<HTMLDialogElement>(null);
   const [draft, setDraft] = useState(email);
   const [form, setForm] = useState({ to_email: email?.to_email || "", to_name: email?.to_name || "", subject: email?.subject || "", body: email?.body || "" });
-  const [tab, setTab] = useState<"email" | "evidence" | "activity" | "call" | "replies">(email ? "email" : "evidence");
+  const [tab, setTab] = useState<"email" | "evidence" | "activity" | "call" | "replies" | "contacts">(email ? "email" : "evidence");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const dirty = Boolean(draft && Object.entries(form).some(([k, v]) => v !== draft[k as keyof Draft]));
-  const approvedByMe = !!draft?.ready_to_send && draft.approved_by === mailbox?.object_id;
+  const approvedByMe = !!draft?.ready_to_send && draft.approved_by === mailbox?.object_id && draft.approved_mailbox === (mailbox?.mailbox_key || mailbox?.object_id);
   const locked = !draft || ["sent", "sending", "unknown"].includes(draft.status);
   const url = websiteUrl(lead.website);
 
@@ -46,10 +49,11 @@ export default function EmailEditor({ lead, email, mock, mailbox, onConnect, onC
   return <dialog ref={dialog} className="lead-dialog" onCancel={e => { e.preventDefault(); if (!busy) onClose(); }} aria-labelledby="lead-title">
     <div className="drawer-top"><span className="eyebrow">COMPANY WORKSPACE</span><button className="icon-button" aria-label="Close company details" disabled={busy} onClick={onClose}><X size={21} /></button></div>
     <div className="drawer-heading"><div className="company-icon large">{company(lead.company_name).slice(0, 2).toUpperCase()}</div><div><h2 id="lead-title">{company(lead.company_name)}</h2>{url && <a href={url} target="_blank" rel="noreferrer" className="muted small">{lead.website}<ExternalLink size={12} /></a>}</div><span className={`badge ${lead.tier.toLowerCase()}`}>{lead.tier} · {lead.score}</span></div>
-    <div className="tabs" style={{ flexWrap: "wrap", gap: "0 20px" }}>{([['email', 'Email draft'], ['evidence', 'Lead evidence'], ['activity', 'Delivery history'], ['call', 'Voice call'], ['replies', 'Replies']] as const).map(([key, label]) => <button style={{ flexShrink: 0 }} className={tab === key ? "active" : ""} key={key} onClick={() => setTab(key)}>{label}</button>)}</div>
+    <div className="tabs" style={{ flexWrap: "wrap", gap: "0 20px" }}>{([['email', 'Email draft'], ['evidence', 'Lead evidence'], ['activity', 'Delivery history'], ['contacts', 'Contacts'], ['call', 'Voice call'], ['replies', 'Replies']] as const).map(([key, label]) => <button style={{ flexShrink: 0 }} className={tab === key ? "active" : ""} key={key} onClick={() => setTab(key)}>{label}</button>)}</div>
     <div className="drawer-body">
+      {tab === "contacts" && <ContactDetails lead={lead} mock={mock} onSaved={async value => { setLead(value); await onChange(); }} />}
       {tab === "call" && <VoiceCallPanel lead={lead} mock={mock} />}
-      {tab === "replies" && <EmailConversation key={`${lead.id}-${mailbox?.object_id || "none"}`} email={draft} mailbox={mailbox} onConnect={onConnect} />}
+      {tab === "replies" && <EmailConversation key={`${lead.id}-${mailbox?.object_id || "none"}-${mailbox?.mailbox_key || ""}`} email={draft} mailbox={mailbox} onConnect={onConnect} />}
       {error && <div className="notice error" role="alert">{error}{draft && <button className="text-button" onClick={() => update(() => api<Draft>(`emails/${draft.id}`), "Latest saved draft loaded.")}>Reload saved draft</button>}</div>}
       {message && <div className="notice success" role="status">{message}</div>}
       {tab === "email" && (draft ? <>
@@ -59,7 +63,7 @@ export default function EmailEditor({ lead, email, mock, mailbox, onConnect, onC
         <p className="sender-note"><strong>From:</strong> {locked ? (draft?.sender_email || "Recorded sender") : (mailbox?.email || "Connect your Microsoft mailbox to send")} · Microsoft 365</p>
         <fieldset disabled={locked || busy} className="email-form"><div className="two-cols"><label>Recipient name<input value={form.to_name} onChange={e => setForm({ ...form, to_name: e.target.value })} maxLength={200} /></label><label>Email address<input type="email" value={form.to_email} onChange={e => setForm({ ...form, to_email: e.target.value })} required /></label></div><label>Subject<input value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} maxLength={240} required /></label><label>Message<textarea className="message-input" value={form.body} onChange={e => setForm({ ...form, body: e.target.value })} maxLength={20000} required /></label></fieldset>
         {draft.status === "sent" ? <div className="notice success"><Check size={17} />Sent {draft.sent_at ? dateLabel(draft.sent_at) : ""}. Inbox delivery is not tracked.</div> : draft.status === "unknown" ? <div className="resolve-card"><strong>Confirm the delivery outcome</strong><p>Check the sender’s Outlook Sent Items or ask your administrator to check Exchange message trace before choosing an outcome. App delivery reference: <code>{draft.message_id}</code>.</p><div className="row gap"><button disabled={busy || (draft.sent_by !== mailbox?.object_id)} className="secondary" onClick={() => update(() => api<Draft>(`emails/${draft.id}/resolve`, payload("POST", { expected_version: draft.version, delivered: true })), "Recorded as sent after your verification.")}>Verified: accepted</button><button disabled={busy || (draft.sent_by !== mailbox?.object_id)} className="secondary" onClick={() => update(() => api<Draft>(`emails/${draft.id}/resolve`, payload("POST", { expected_version: draft.version, delivered: false })), "Recorded as not accepted. Review and approve again to retry.")}>Verified: not accepted</button></div></div> : <>
-          <div className="approval-card"><div className="row gap"><ShieldCheck size={22} /><div><strong>Ready to send</strong><p>{dirty ? "Save your changes before approving this email." : draft.ready_to_send && !approvedByMe ? "Another account approved this draft. Approve it yourself to send from your mailbox." : mailbox ? `Approve this recipient and message to send from ${mailbox.email}.` : "Connect a Microsoft mailbox before approving this draft for sending."}</p></div></div><button role="switch" aria-label="Ready to send" aria-checked={approvedByMe} className={`switch ${approvedByMe ? "on" : ""}`} disabled={busy || dirty || locked || !mailbox} onClick={() => update(() => api<Draft>(`emails/${draft.id}/approval`, payload("POST", { expected_version: draft.version, ready_to_send: !approvedByMe })), approvedByMe ? "Approval removed. This email will not send." : "Approved. Use Send email when you are ready.")}><span /></button></div>
+          <div className="approval-card"><div className="row gap"><ShieldCheck size={22} /><div><strong>Ready to send</strong><p>{dirty ? "Save your changes before approving this email." : draft.ready_to_send && !approvedByMe ? "The approving account or sending mailbox differs. Review and approve this draft again." : mailbox ? `Approve this recipient and message to send from ${mailbox.email}.` : "Connect a Microsoft mailbox before approving this draft for sending."}</p></div></div><button role="switch" aria-label="Ready to send" aria-checked={approvedByMe} className={`switch ${approvedByMe ? "on" : ""}`} disabled={busy || dirty || locked || !mailbox} onClick={() => update(() => api<Draft>(`emails/${draft.id}/approval`, payload("POST", { expected_version: draft.version, ready_to_send: !approvedByMe })), approvedByMe ? "Approval removed. This email will not send." : "Approved. Use Send email when you are ready.")}><span /></button></div>
           <p className="small muted">{mock ? "This is sample data. Approval can be tested, but email delivery is disabled." : !mailbox ? "Connect a Microsoft mailbox in Connections when you are ready to send." : "Saving or approving a draft does not send it. Only approved drafts can be sent."}</p>
           {!mailbox && !mock && <button className="secondary" onClick={onConnect}>Open mailbox connections</button>}
           <div className="editor-actions"><button className="secondary" disabled={busy || !dirty || locked} onClick={() => update(() => api<Draft>(`emails/${draft.id}`, payload("PATCH", { ...form, expected_version: draft.version })), "Changes saved. Please review and approve the new version.")}><Save size={16} />Save draft</button><button className="primary" disabled={busy || dirty || !approvedByMe || mock || !mailbox || locked} onClick={send}><Send size={16} />{busy ? "Working…" : "Send email"}</button></div>

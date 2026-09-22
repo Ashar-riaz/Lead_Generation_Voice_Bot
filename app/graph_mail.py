@@ -1,5 +1,6 @@
 """Send an explicitly approved message from the connected Microsoft mailbox."""
 import requests
+from app.mailbox_target import graph_mailbox_path
 
 
 class DeliveryError(Exception):
@@ -17,14 +18,16 @@ class MicrosoftMailTransport:
             token = self.auth.access_token(self.actor)
         except Exception:
             raise DeliveryError("Microsoft mail access is unavailable. Reconnect your mailbox in Connections before reviewing and retrying.") from None
-        # No sender override: /me sends as the authenticated mailbox. No automatic POST retries.
+        # The target comes only from backend configuration, never a browser-supplied From.
         body = {"message": {
             "subject": draft["subject"], "body": {"contentType": "Text", "content": draft["body"]},
             "toRecipients": [{"emailAddress": {"address": draft["to_email"], "name": draft["to_name"]}}],
             "internetMessageHeaders": [{"name": "x-wtd-delivery-id", "value": message_id}],
         }, "saveToSentItems": True}
+        if self.actor.get("shared"):
+            body["message"]["from"] = {"emailAddress": {"address": self.actor["email"]}}
         try:
-            response = requests.post("https://graph.microsoft.com/v1.0/me/sendMail", json=body,
+            response = requests.post("https://graph.microsoft.com/v1.0" + graph_mailbox_path(self.actor) + "/sendMail", json=body,
                         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
                         timeout=(10, 30), allow_redirects=False)
         except requests.ConnectTimeout:
@@ -34,7 +37,7 @@ class MicrosoftMailTransport:
         if response.status_code == 202:
             return
         if response.status_code in (401, 403):
-            raise DeliveryError("Microsoft denied mail sending. Check delegated Mail.Send permission and reconnect your mailbox.")
+            raise DeliveryError("Microsoft denied mail sending. For a shared mailbox, ask your administrator for Full Access, Send As and delegated Mail.Send.Shared, then reconnect. For a personal mailbox, check Mail.Send.")
         if response.status_code == 429:
             raise DeliveryError("Microsoft rate limited this request. Wait before reviewing and approving a retry.")
         if 400 <= response.status_code < 500:

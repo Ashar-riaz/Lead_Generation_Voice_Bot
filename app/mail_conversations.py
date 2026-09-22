@@ -10,6 +10,7 @@ from email_validator import EmailNotValidError, validate_email
 
 from app.graph_mail import DeliveryError
 from app.store import StoreError
+from app.mailbox_target import graph_mailbox_path
 
 GRAPH = "https://graph.microsoft.com/v1.0"
 SELECT = "id,conversationId,internetMessageId,internetMessageHeaders,subject,from,sender,toRecipients,replyTo,body,receivedDateTime,sentDateTime,isDraft"
@@ -83,6 +84,8 @@ def normalise_message(message, mailbox_addresses):
 class GraphConversationClient:
     def __init__(self, auth, actor):
         self.token = auth.access_token(actor)
+        self.base = GRAPH + graph_mailbox_path(actor)
+        self.actor = actor
 
     @property
     def headers(self):
@@ -92,14 +95,14 @@ class GraphConversationClient:
     def get(self, url, params=None):
         parsed = urlparse(url)
         # nextLink is opaque, but it must never send the bearer token to another host.
-        if parsed.scheme != "https" or parsed.netloc != "graph.microsoft.com" or not parsed.path.startswith("/v1.0/"):
+        if parsed.scheme != "https" or parsed.netloc != "graph.microsoft.com" or not url.startswith(self.base + "/"):
             raise StoreError(502, "Microsoft returned an invalid mailbox continuation link.")
         try:
             response = requests.get(url, params=params, headers=self.headers, timeout=(5, 20), allow_redirects=False)
         except requests.RequestException:
             raise StoreError(502, "Could not read Microsoft email. Your saved messages are still available; try refreshing later.") from None
         if response.status_code in (401, 403):
-            raise StoreError(403, "Microsoft denied mailbox reading. Add delegated Mail.Read permission and reconnect the mailbox in Connections.")
+            raise StoreError(403, "Microsoft denied mailbox reading. Shared mailboxes need Full Access and delegated Mail.Read.Shared; personal mailboxes need Mail.Read. Ask your administrator, then reconnect.")
         if response.status_code == 404:
             raise StoreError(409, "The email is no longer available in this mailbox. Refresh the conversation before replying.")
         if response.status_code == 429:
@@ -118,7 +121,7 @@ class GraphConversationClient:
         since = datetime.fromisoformat(attempted_at.replace("Z", "+00:00"))
         lower = (since - timedelta(minutes=5)).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
         upper = (since + timedelta(days=7)).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-        page = self.get(cursor or GRAPH + "/me/mailFolders/sentitems/messages", None if cursor else {
+        page = self.get(cursor or self.base + "/mailFolders/sentitems/messages", None if cursor else {
             "$select": "id,conversationId,internetMessageHeaders,from,toRecipients,isDraft",
             "$filter": f"sentDateTime ge {lower} and sentDateTime le {upper}",
             "$orderby": "sentDateTime asc", "$top": "100"})
@@ -131,19 +134,21 @@ class GraphConversationClient:
 
     def conversation_page(self, conversation_id, cursor=None):
         escaped = conversation_id.replace("'", "''")
-        return self.get(cursor or GRAPH + "/me/messages", None if cursor else {
+        return self.get(cursor or self.base + "/messages", None if cursor else {
             "$filter": f"receivedDateTime ge 1970-01-01T00:00:00Z and conversationId eq '{escaped}'",
             "$orderby": "receivedDateTime asc", "$select": SELECT, "$top": "50"})
 
     def message(self, provider_id):
-        return self.get(GRAPH + "/me/messages/" + quote(provider_id, safe=""), {"$select": SELECT})
+        return self.get(self.base + "/messages/" + quote(provider_id, safe=""), {"$select": SELECT})
 
     def reply(self, provider_id, recipients, body):
-        url = GRAPH + "/me/messages/" + quote(provider_id, safe="") + "/reply"
+        url = self.base + "/messages/" + quote(provider_id, safe="") + "/reply"
         # Exact reviewed recipients and plain text; never use Reply All or hidden recipients.
         payload = {"message": {"body": {"contentType": "Text", "content": body},
                    "toRecipients": [{"emailAddress": r} for r in recipients],
                    "ccRecipients": [], "bccRecipients": []}}
+        if self.actor.get("shared"):
+            payload["message"]["from"] = {"emailAddress": {"address": self.actor["email"]}}
         try:
             response = requests.post(url, json=payload, headers=self.headers, timeout=(5, 30), allow_redirects=False)
         except requests.ConnectTimeout:
@@ -153,7 +158,7 @@ class GraphConversationClient:
         if response.status_code == 202:
             return
         if response.status_code in (401, 403):
-            raise DeliveryError("Microsoft denied sending. Check delegated Mail.Send permission and reconnect the mailbox.")
+            raise DeliveryError("Microsoft denied sending. Shared mailboxes require Full Access, Send As and Mail.Send.Shared; personal mailboxes require Mail.Send. Reconnect after your administrator grants access.")
         if 400 <= response.status_code < 500:
             raise DeliveryError(f"Microsoft rejected the reply (HTTP {response.status_code}). Refresh the conversation, review and approve again.")
         raise DeliveryError("Microsoft did not confirm this reply. Check Outlook Sent Items before resolving its status.", uncertain=True)
